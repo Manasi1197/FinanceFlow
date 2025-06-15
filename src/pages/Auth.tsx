@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogIn, UserPlus, DollarSign } from 'lucide-react';
+import { LogIn, UserPlus, DollarSign, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const countries = [
   { code: 'US', name: 'United States', currency: 'USD ($)' },
@@ -34,7 +34,7 @@ const countries = [
 ];
 
 const Auth = () => {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -49,7 +49,25 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (isSignUp) {
+      if (mode === 'forgot') {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth`,
+        });
+        
+        if (error) {
+          toast({
+            title: "Reset failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Reset email sent!",
+            description: "Check your email for password reset instructions.",
+          });
+          setMode('signin');
+        }
+      } else if (mode === 'signup') {
         if (!fullName || !country) {
           toast({
             title: "Error",
@@ -72,7 +90,7 @@ const Auth = () => {
             title: "Success!",
             description: "Account created successfully. Please check your email to verify your account.",
           });
-          setIsSignUp(false);
+          setMode('signin');
         }
       } else {
         const { error } = await signIn(email, password);
@@ -102,21 +120,37 @@ const Auth = () => {
     }
   };
 
+  const getTitle = () => {
+    switch (mode) {
+      case 'signup': return 'Create Account';
+      case 'forgot': return 'Reset Password';
+      default: return 'Welcome Back';
+    }
+  };
+
+  const getDescription = () => {
+    switch (mode) {
+      case 'signup': return 'Join FinanceFlow to track your expenses';
+      case 'forgot': return 'Enter your email to reset your password';
+      default: return 'Sign in to your FinanceFlow account';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <Card className="w-full max-w-sm sm:max-w-md bg-white/80 backdrop-blur-sm border-0 shadow-xl">
         <CardHeader className="text-center space-y-3 px-4 sm:px-6 pt-6 pb-4">
           <CardTitle className="flex items-center justify-center space-x-2 text-xl sm:text-2xl">
             <DollarSign className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-600" />
-            <span>{isSignUp ? 'Create Account' : 'Welcome Back'}</span>
+            <span>{getTitle()}</span>
           </CardTitle>
           <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
-            {isSignUp ? 'Join FinanceFlow to track your expenses' : 'Sign in to your FinanceFlow account'}
+            {getDescription()}
           </p>
         </CardHeader>
         <CardContent className="px-4 sm:px-6 pb-6">
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-            {isSignUp && (
+            {mode === 'signup' && (
               <div className="space-y-2">
                 <Label htmlFor="auth-fullName" className="text-sm font-medium">Full Name</Label>
                 <Input
@@ -144,20 +178,22 @@ const Auth = () => {
               />
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="auth-password" className="text-sm font-medium">Password</Label>
-              <Input
-                id="auth-password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="h-10 sm:h-11 text-base"
-              />
-            </div>
+            {mode !== 'forgot' && (
+              <div className="space-y-2">
+                <Label htmlFor="auth-password" className="text-sm font-medium">Password</Label>
+                <Input
+                  id="auth-password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="h-10 sm:h-11 text-base"
+                />
+              </div>
+            )}
 
-            {isSignUp && (
+            {mode === 'signup' && (
               <div className="space-y-2">
                 <Label htmlFor="auth-country" className="text-sm font-medium">Country</Label>
                 <Select value={country} onValueChange={setCountry} required>
@@ -184,21 +220,46 @@ const Auth = () => {
                 'Loading...'
               ) : (
                 <>
-                  {isSignUp ? <UserPlus className="w-4 h-4 mr-2" /> : <LogIn className="w-4 h-4 mr-2" />}
-                  {isSignUp ? 'Create Account' : 'Sign In'}
+                  {mode === 'signup' && <UserPlus className="w-4 h-4 mr-2" />}
+                  {mode === 'signin' && <LogIn className="w-4 h-4 mr-2" />}
+                  {mode === 'forgot' && <ArrowLeft className="w-4 h-4 mr-2" />}
+                  {mode === 'signup' ? 'Create Account' : mode === 'forgot' ? 'Send Reset Email' : 'Sign In'}
                 </>
               )}
             </Button>
           </form>
 
-          <div className="mt-4 sm:mt-6 text-center">
-            <Button
-              variant="ghost"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-emerald-600 hover:text-emerald-700 text-sm sm:text-base p-2"
-            >
-              {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
-            </Button>
+          <div className="mt-4 sm:mt-6 space-y-2 text-center">
+            {mode === 'forgot' ? (
+              <Button
+                variant="ghost"
+                onClick={() => setMode('signin')}
+                className="text-emerald-600 hover:text-emerald-700 text-sm sm:text-base p-2"
+              >
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                Back to sign in
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
+                  className="text-emerald-600 hover:text-emerald-700 text-sm sm:text-base p-2"
+                >
+                  {mode === 'signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+                </Button>
+                
+                {mode === 'signin' && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => setMode('forgot')}
+                    className="text-gray-600 hover:text-gray-700 text-sm sm:text-base p-2"
+                  >
+                    Forgot your password?
+                  </Button>
+                )}
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
