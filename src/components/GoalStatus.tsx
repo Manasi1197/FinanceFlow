@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { AlertTriangle, CheckCircle, Target } from 'lucide-react';
 import { useSpendingGoal } from '../contexts/SpendingGoalContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -31,22 +32,20 @@ const GoalStatus = ({ monthlySpent, yearlySpent }: GoalStatusProps) => {
     return `You've exceeded your ${period} goal. Time to review your expenses.`;
   };
 
-  const getProgressColor = (progress: number) => {
-    if (progress <= 80) return 'bg-green-500';
-    if (progress <= 100) return 'bg-yellow-500';
-    return 'bg-red-500';
-  };
-
   if (loading) {
     return (
       <div className="space-y-4">
         <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-lg">
           <CardContent className="p-4">
-            <div className="animate-pulse">
-              <div className="h-4 bg-gray-200 rounded mb-2"></div>
-              <div className="h-2 bg-gray-200 rounded mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded"></div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <Skeleton className="h-5 w-5 rounded-full" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <Skeleton className="h-4 w-20" />
             </div>
+            <Skeleton className="h-2 w-full mb-2" />
+            <Skeleton className="h-3 w-3/4" />
           </CardContent>
         </Card>
       </div>
