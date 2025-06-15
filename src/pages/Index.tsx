@@ -5,7 +5,9 @@ import Header from '../components/Header';
 import Dashboard from '../components/Dashboard';
 import ExpenseForm from '../components/ExpenseForm';
 import ExpenseList from '../components/ExpenseList';
+import GoalSetupModal from '../components/GoalSetupModal';
 import { Button } from '@/components/ui/button';
+import { SpendingGoalProvider } from '../contexts/SpendingGoalContext';
 
 export interface Expense {
   id: string;
@@ -40,6 +42,7 @@ const Index = () => {
     }
   ]);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
+  const [showGoalModal, setShowGoalModal] = useState(false);
 
   const totalSpent = useMemo(() => {
     return expenses.reduce((sum, expense) => sum + expense.amount, 0);
@@ -59,37 +62,48 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50">
-      <Header />
-      
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Financial Dashboard</h1>
-          <p className="text-gray-600">Track your expenses and take control of your finances</p>
-        </div>
-
-        <Dashboard expenses={expenses} totalSpent={totalSpent} />
-
-        <div className="mt-12 flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold text-gray-900">Recent Transactions</h2>
-          <Button
-            onClick={() => setShowExpenseForm(!showExpenseForm)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Expense
-          </Button>
-        </div>
-
-        {showExpenseForm && (
+    <SpendingGoalProvider>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50">
+        <Header />
+        
+        <main className="container mx-auto px-4 py-8">
           <div className="mb-8">
-            <ExpenseForm onSubmit={addExpense} onCancel={() => setShowExpenseForm(false)} />
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Financial Dashboard</h1>
+            <p className="text-gray-600">Track your expenses and take control of your finances</p>
           </div>
-        )}
 
-        <ExpenseList expenses={expenses} onDelete={deleteExpense} />
-      </main>
-    </div>
+          <Dashboard 
+            expenses={expenses} 
+            totalSpent={totalSpent} 
+            onSetupGoals={() => setShowGoalModal(true)}
+          />
+
+          <div className="mt-12 flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold text-gray-900">Recent Transactions</h2>
+            <Button
+              onClick={() => setShowExpenseForm(!showExpenseForm)}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Expense
+            </Button>
+          </div>
+
+          {showExpenseForm && (
+            <div className="mb-8">
+              <ExpenseForm onSubmit={addExpense} onCancel={() => setShowExpenseForm(false)} />
+            </div>
+          )}
+
+          <ExpenseList expenses={expenses} onDelete={deleteExpense} />
+
+          <GoalSetupModal 
+            open={showGoalModal} 
+            onOpenChange={setShowGoalModal}
+          />
+        </main>
+      </div>
+    </SpendingGoalProvider>
   );
 };
 
