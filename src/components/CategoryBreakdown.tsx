@@ -40,9 +40,9 @@ const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white p-3 rounded-lg shadow-lg border">
-          <p className="font-medium">{data.name}</p>
-          <p className="text-emerald-600">${data.value.toFixed(2)}</p>
+        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
+          <p className="font-semibold text-gray-800">{data.name}</p>
+          <p className="text-emerald-600 font-medium">${data.value.toFixed(2)}</p>
           <p className="text-gray-600 text-sm">{data.percentage}% of total</p>
         </div>
       );
@@ -52,43 +52,77 @@ const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
 
   if (expenses.length === 0) {
     return (
-      <div className="h-64 flex items-center justify-center text-gray-500">
-        No expenses to display
+      <div className="h-80 flex flex-col items-center justify-center text-gray-500">
+        <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        </div>
+        <p className="text-lg font-medium">No expenses to display</p>
+        <p className="text-sm">Add some expenses to see your spending breakdown</p>
       </div>
     );
   }
 
   return (
-    <div className="h-64">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius={40}
-            outerRadius={80}
-            paddingAngle={2}
-            dataKey="value"
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip content={<CustomTooltip />} />
-        </PieChart>
-      </ResponsiveContainer>
-      
-      <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-        {data.slice(0, 6).map((item, index) => (
-          <div key={item.name} className="flex items-center">
-            <div 
-              className="w-3 h-3 rounded-full mr-2" 
-              style={{ backgroundColor: COLORS[index % COLORS.length] }}
-            ></div>
-            <span className="truncate">{item.name}</span>
+    <div className="space-y-6">
+      {/* Chart Section */}
+      <div className="h-72 relative">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={120}
+              paddingAngle={3}
+              dataKey="value"
+            >
+              {data.map((entry, index) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={COLORS[index % COLORS.length]}
+                  stroke="white"
+                  strokeWidth={2}
+                />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+          </PieChart>
+        </ResponsiveContainer>
+        
+        {/* Center text with total */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-center">
+            <p className="text-2xl font-bold text-gray-800">
+              ${expenses.reduce((sum, e) => sum + e.amount, 0).toFixed(0)}
+            </p>
+            <p className="text-sm text-gray-600">Total Spent</p>
           </div>
-        ))}
+        </div>
+      </div>
+      
+      {/* Legend Section */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-semibold text-gray-700 mb-3">Category Breakdown</h4>
+        <div className="space-y-2">
+          {data.map((item, index) => (
+            <div key={item.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+              <div className="flex items-center space-x-3">
+                <div 
+                  className="w-4 h-4 rounded-full flex-shrink-0" 
+                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                />
+                <span className="text-sm font-medium text-gray-800 truncate">{item.name}</span>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="text-sm font-semibold text-gray-800">${item.value.toFixed(2)}</p>
+                <p className="text-xs text-gray-600">{item.percentage}%</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
