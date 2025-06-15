@@ -12,7 +12,7 @@ interface GoalStatusProps {
 }
 
 const GoalStatus = ({ monthlySpent, yearlySpent }: GoalStatusProps) => {
-  const { goals } = useSpendingGoal();
+  const { goals, loading } = useSpendingGoal();
   const { profile } = useUserProfile();
   const currencySymbol = profile?.currency_symbol || '$';
 
@@ -36,6 +36,22 @@ const GoalStatus = ({ monthlySpent, yearlySpent }: GoalStatusProps) => {
     if (progress <= 100) return 'bg-yellow-500';
     return 'bg-red-500';
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-lg">
+          <CardContent className="p-4">
+            <div className="animate-pulse">
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="h-2 bg-gray-200 rounded mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded"></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (!goals.monthly && !goals.yearly) return null;
 
