@@ -44,7 +44,7 @@ const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
+        <div className="bg-white p-3 rounded-lg shadow-xl border border-gray-200 z-50 relative">
           <p className="font-semibold text-gray-800">{data.name}</p>
           <p className="text-emerald-600 font-medium">{currencySymbol}{data.value.toFixed(2)}</p>
           <p className="text-gray-600 text-sm">{data.percentage}% of total</p>
@@ -92,13 +92,18 @@ const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
                 />
               ))}
             </Pie>
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip 
+              content={<CustomTooltip />} 
+              wrapperStyle={{ zIndex: 1000 }}
+              offset={20}
+              allowEscapeViewBox={{ x: true, y: true }}
+            />
           </PieChart>
         </ResponsiveContainer>
         
         {/* Center text with total */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="text-center">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+          <div className="text-center bg-white/80 backdrop-blur-sm rounded-full px-4 py-2">
             <p className="text-2xl font-bold text-gray-800">
               {currencySymbol}{expenses.reduce((sum, e) => sum + e.amount, 0).toFixed(0)}
             </p>
