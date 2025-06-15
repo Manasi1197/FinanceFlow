@@ -54,6 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -62,6 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -71,10 +73,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string, country: string) => {
-    const currency = countryToCurrency[country as keyof typeof countryToCurrency];
-    const redirectUrl = `${window.location.origin}/`;
+    console.log('Starting signup process...', { email, fullName, country });
     
-    const { error } = await supabase.auth.signUp({
+    const currency = countryToCurrency[country as keyof typeof countryToCurrency];
+    console.log('Currency mapping:', currency);
+    
+    if (!currency) {
+      console.error('Invalid country code:', country);
+      return { error: { message: 'Invalid country selected' } };
+    }
+    
+    const redirectUrl = `${window.location.origin}/`;
+    console.log('Redirect URL:', redirectUrl);
+    
+    const signupData = {
       email,
       password,
       options: {
@@ -86,24 +98,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           currency_symbol: currency.symbol
         }
       }
-    });
+    };
+    
+    console.log('Signup data being sent:', JSON.stringify(signupData, null, 2));
+    
+    const { error } = await supabase.auth.signUp(signupData);
+    
+    if (error) {
+      console.error('Signup error:', error);
+    } else {
+      console.log('Signup successful');
+    }
     
     return { error };
   };
 
   const signIn = async (email: string, password: string) => {
+    console.log('Starting signin process...', { email });
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     
+    if (error) {
+      console.error('Signin error:', error);
+    } else {
+      console.log('Signin successful');
+    }
+    
     return { error };
   };
 
   const signOut = async () => {
+    console.log('Starting signout process...');
     const { error } = await supabase.auth.signOut();
     if (!error) {
       window.location.href = '/auth';
+    } else {
+      console.error('Signout error:', error);
     }
   };
 
