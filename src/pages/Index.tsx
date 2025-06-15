@@ -8,6 +8,7 @@ import ExpenseList from '../components/ExpenseList';
 import GoalSetupModal from '../components/GoalSetupModal';
 import { Button } from '@/components/ui/button';
 import { SpendingGoalProvider } from '../contexts/SpendingGoalContext';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 export interface Expense {
   id: string;
@@ -18,29 +19,8 @@ export interface Expense {
 }
 
 const Index = () => {
-  const [expenses, setExpenses] = useState<Expense[]>([
-    {
-      id: '1',
-      amount: 89.50,
-      description: 'Grocery shopping',
-      category: 'Food & Dining',
-      date: '2025-06-14'
-    },
-    {
-      id: '2',
-      amount: 45.00,
-      description: 'Gas station',
-      category: 'Transportation',
-      date: '2025-06-13'
-    },
-    {
-      id: '3',
-      amount: 120.00,
-      description: 'Monthly gym membership',
-      category: 'Health & Fitness',
-      date: '2025-06-12'
-    }
-  ]);
+  const { profile } = useUserProfile();
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
 
@@ -61,6 +41,17 @@ const Index = () => {
     setExpenses(prev => prev.filter(expense => expense.id !== id));
   };
 
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <SpendingGoalProvider>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50">
@@ -69,7 +60,9 @@ const Index = () => {
         <main className="container mx-auto px-4 py-8">
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Financial Dashboard</h1>
-            <p className="text-gray-600">Track your expenses and take control of your finances</p>
+            <p className="text-gray-600">
+              Track your expenses in {profile.currency_code} and take control of your finances
+            </p>
           </div>
 
           <Dashboard 
