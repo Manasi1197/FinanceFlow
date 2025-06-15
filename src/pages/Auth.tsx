@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogIn, UserPlus, DollarSign, ArrowLeft } from 'lucide-react';
+import { LogIn, UserPlus, DollarSign, ArrowLeft, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,9 +35,10 @@ const countries = [
 ];
 
 const Auth = () => {
-  const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>('signin');
+  const [mode, setMode] = useState<'signin' | 'signup' | 'forgot' | 'reset'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [country, setCountry] = useState('');
   const [loading, setLoading] = useState(false);
@@ -44,12 +46,63 @@ const Auth = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Check for password reset session on component mount
+  useEffect(() => {
+    const checkForPasswordReset = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // If there's a session and it's from a password recovery, show reset form
+      if (session?.user && session.user.recovery_sent_at) {
+        setMode('reset');
+        setEmail(session.user.email || '');
+      }
+    };
+
+    checkForPasswordReset();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (mode === 'forgot') {
+      if (mode === 'reset') {
+        if (password !== confirmPassword) {
+          toast({
+            title: "Error",
+            description: "Passwords do not match",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (password.length < 6) {
+          toast({
+            title: "Error",
+            description: "Password must be at least 6 characters long",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const { error } = await supabase.auth.updateUser({
+          password: password
+        });
+
+        if (error) {
+          toast({
+            title: "Password reset failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Success!",
+            description: "Your password has been updated successfully.",
+          });
+          navigate('/');
+        }
+      } else if (mode === 'forgot') {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/auth`,
         });
@@ -124,6 +177,7 @@ const Auth = () => {
     switch (mode) {
       case 'signup': return 'Create Account';
       case 'forgot': return 'Reset Password';
+      case 'reset': return 'Set New Password';
       default: return 'Welcome Back';
     }
   };
@@ -132,6 +186,7 @@ const Auth = () => {
     switch (mode) {
       case 'signup': return 'Join FinanceFlow to track your expenses';
       case 'forgot': return 'Enter your email to reset your password';
+      case 'reset': return 'Enter your new password below';
       default: return 'Sign in to your FinanceFlow account';
     }
   };
@@ -165,20 +220,62 @@ const Auth = () => {
               </div>
             )}
             
-            <div className="space-y-2">
-              <Label htmlFor="auth-email" className="text-sm font-medium">Email</Label>
-              <Input
-                id="auth-email"
-                type="email"
-                placeholder="john@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="h-10 sm:h-11 text-base"
-              />
-            </div>
+            {mode !== 'reset' && (
+              <div className="space-y-2">
+                <Label htmlFor="auth-email" className="text-sm font-medium">Email</Label>
+                <Input
+                  id="auth-email"
+                  type="email"
+                  placeholder="john@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="h-10 sm:h-11 text-base"
+                  disabled={mode === 'reset'}
+                />
+              </div>
+            )}
+
+            {mode === 'reset' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="auth-email-display" className="text-sm font-medium">Email</Label>
+                  <Input
+                    id="auth-email-display"
+                    type="email"
+                    value={email}
+                    disabled
+                    className="h-10 sm:h-11 text-base bg-gray-50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="auth-password" className="text-sm font-medium">New Password</Label>
+                  <Input
+                    id="auth-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="h-10 sm:h-11 text-base"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="auth-confirm-password" className="text-sm font-medium">Confirm New Password</Label>
+                  <Input
+                    id="auth-confirm-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="h-10 sm:h-11 text-base"
+                  />
+                </div>
+              </>
+            )}
             
-            {mode !== 'forgot' && (
+            {(mode === 'signin' || mode === 'signup') && (
               <div className="space-y-2">
                 <Label htmlFor="auth-password" className="text-sm font-medium">Password</Label>
                 <Input
@@ -223,44 +320,49 @@ const Auth = () => {
                   {mode === 'signup' && <UserPlus className="w-4 h-4 mr-2" />}
                   {mode === 'signin' && <LogIn className="w-4 h-4 mr-2" />}
                   {mode === 'forgot' && <ArrowLeft className="w-4 h-4 mr-2" />}
-                  {mode === 'signup' ? 'Create Account' : mode === 'forgot' ? 'Send Reset Email' : 'Sign In'}
+                  {mode === 'reset' && <Lock className="w-4 h-4 mr-2" />}
+                  {mode === 'signup' ? 'Create Account' : 
+                   mode === 'forgot' ? 'Send Reset Email' : 
+                   mode === 'reset' ? 'Update Password' : 'Sign In'}
                 </>
               )}
             </Button>
           </form>
 
-          <div className="mt-4 sm:mt-6 space-y-2 text-center">
-            {mode === 'forgot' ? (
-              <Button
-                variant="ghost"
-                onClick={() => setMode('signin')}
-                className="text-emerald-600 hover:text-emerald-700 text-sm sm:text-base p-2"
-              >
-                <ArrowLeft className="w-4 h-4 mr-1" />
-                Back to sign in
-              </Button>
-            ) : (
-              <>
+          {mode !== 'reset' && (
+            <div className="mt-4 sm:mt-6 space-y-2 text-center">
+              {mode === 'forgot' ? (
                 <Button
                   variant="ghost"
-                  onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
+                  onClick={() => setMode('signin')}
                   className="text-emerald-600 hover:text-emerald-700 text-sm sm:text-base p-2"
                 >
-                  {mode === 'signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+                  <ArrowLeft className="w-4 h-4 mr-1" />
+                  Back to sign in
                 </Button>
-                
-                {mode === 'signin' && (
+              ) : (
+                <>
                   <Button
                     variant="ghost"
-                    onClick={() => setMode('forgot')}
-                    className="text-gray-600 hover:text-gray-700 text-sm sm:text-base p-2"
+                    onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
+                    className="text-emerald-600 hover:text-emerald-700 text-sm sm:text-base p-2"
                   >
-                    Forgot your password?
+                    {mode === 'signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
                   </Button>
-                )}
-              </>
-            )}
-          </div>
+                  
+                  {mode === 'signin' && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => setMode('forgot')}
+                      className="text-gray-600 hover:text-gray-700 text-sm sm:text-base p-2"
+                    >
+                      Forgot your password?
+                    </Button>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
