@@ -51,10 +51,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('🔧 AuthProvider: Setting up auth state listener...');
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state change:', event, session?.user?.id);
+        console.log('🔔 Auth state change event:', event);
+        console.log('🔔 Auth session details:', {
+          hasSession: !!session,
+          userId: session?.user?.id,
+          userEmail: session?.user?.email,
+          metadata: session?.user?.user_metadata
+        });
+        
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -62,29 +71,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session:', session?.user?.id);
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('❌ Error getting initial session:', error);
+      }
+      console.log('🔧 Initial session check:', {
+        hasSession: !!session,
+        userId: session?.user?.id,
+        userEmail: session?.user?.email
+      });
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('🔧 AuthProvider: Cleaning up auth listener');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string, country: string) => {
-    console.log('Starting signup process...', { email, fullName, country });
+    console.log('🚀 Starting signup process...');
+    console.log('📝 Signup parameters:', { email, fullName, country });
     
     const currency = countryToCurrency[country as keyof typeof countryToCurrency];
-    console.log('Currency mapping:', currency);
+    console.log('💰 Currency mapping result:', currency);
     
     if (!currency) {
-      console.error('Invalid country code:', country);
+      console.error('❌ Invalid country code:', country);
       return { error: { message: 'Invalid country selected' } };
     }
     
     const redirectUrl = `${window.location.origin}/`;
-    console.log('Redirect URL:', redirectUrl);
+    console.log('🔗 Redirect URL:', redirectUrl);
     
     const signupData = {
       email,
@@ -100,43 +120,76 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
     
-    console.log('Signup data being sent:', JSON.stringify(signupData, null, 2));
+    console.log('📤 Sending signup request to Supabase...');
+    console.log('📋 Complete signup data:', JSON.stringify(signupData, null, 2));
     
-    const { error } = await supabase.auth.signUp(signupData);
-    
-    if (error) {
-      console.error('Signup error:', error);
-    } else {
-      console.log('Signup successful');
+    try {
+      const { data, error } = await supabase.auth.signUp(signupData);
+      
+      console.log('📥 Supabase signup response:');
+      console.log('✅ Data:', JSON.stringify(data, null, 2));
+      
+      if (error) {
+        console.error('❌ Signup error details:', {
+          message: error.message,
+          status: error.status,
+          details: error
+        });
+      } else {
+        console.log('🎉 Signup successful!');
+        console.log('👤 New user details:', {
+          id: data.user?.id,
+          email: data.user?.email,
+          metadata: data.user?.user_metadata,
+          confirmationSent: !!data.user && !data.session
+        });
+      }
+      
+      return { error };
+    } catch (unexpectedError) {
+      console.error('💥 Unexpected error during signup:', unexpectedError);
+      return { error: { message: 'An unexpected error occurred during signup' } };
     }
-    
-    return { error };
   };
 
   const signIn = async (email: string, password: string) => {
-    console.log('Starting signin process...', { email });
+    console.log('🔑 Starting signin process...', { email });
     
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    
-    if (error) {
-      console.error('Signin error:', error);
-    } else {
-      console.log('Signin successful');
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        console.error('❌ Signin error:', error);
+      } else {
+        console.log('✅ Signin successful');
+        console.log('👤 User details:', {
+          id: data.user?.id,
+          email: data.user?.email
+        });
+      }
+      
+      return { error };
+    } catch (unexpectedError) {
+      console.error('💥 Unexpected error during signin:', unexpectedError);
+      return { error: { message: 'An unexpected error occurred during signin' } };
     }
-    
-    return { error };
   };
 
   const signOut = async () => {
-    console.log('Starting signout process...');
-    const { error } = await supabase.auth.signOut();
-    if (!error) {
-      window.location.href = '/auth';
-    } else {
-      console.error('Signout error:', error);
+    console.log('🚪 Starting signout process...');
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (!error) {
+        console.log('✅ Signout successful, redirecting...');
+        window.location.href = '/auth';
+      } else {
+        console.error('❌ Signout error:', error);
+      }
+    } catch (unexpectedError) {
+      console.error('💥 Unexpected error during signout:', unexpectedError);
     }
   };
 
