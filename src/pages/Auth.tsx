@@ -103,22 +103,22 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50 flex items-center justify-center px-4">
-      <Card className="w-full max-w-md bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-        <CardHeader className="text-center">
-          <CardTitle className="flex items-center justify-center space-x-2 text-2xl">
-            <DollarSign className="w-7 h-7 text-emerald-600" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      <Card className="w-full max-w-sm sm:max-w-md bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+        <CardHeader className="text-center space-y-3 px-4 sm:px-6 pt-6 pb-4">
+          <CardTitle className="flex items-center justify-center space-x-2 text-xl sm:text-2xl">
+            <DollarSign className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-600" />
             <span>{isSignUp ? 'Create Account' : 'Welcome Back'}</span>
           </CardTitle>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
             {isSignUp ? 'Join FinanceFlow to track your expenses' : 'Sign in to your FinanceFlow account'}
           </p>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <CardContent className="px-4 sm:px-6 pb-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             {isSignUp && (
               <div className="space-y-2">
-                <Label htmlFor="auth-fullName">Full Name</Label>
+                <Label htmlFor="auth-fullName" className="text-sm font-medium">Full Name</Label>
                 <Input
                   id="auth-fullName"
                   type="text"
@@ -126,12 +126,13 @@ const Auth = () => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
+                  className="h-10 sm:h-11 text-base"
                 />
               </div>
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="auth-email">Email</Label>
+              <Label htmlFor="auth-email" className="text-sm font-medium">Email</Label>
               <Input
                 id="auth-email"
                 type="email"
@@ -139,11 +140,12 @@ const Auth = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="h-10 sm:h-11 text-base"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="auth-password">Password</Label>
+              <Label htmlFor="auth-password" className="text-sm font-medium">Password</Label>
               <Input
                 id="auth-password"
                 type="password"
@@ -151,19 +153,20 @@ const Auth = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="h-10 sm:h-11 text-base"
               />
             </div>
 
             {isSignUp && (
               <div className="space-y-2">
-                <Label htmlFor="auth-country">Country</Label>
+                <Label htmlFor="auth-country" className="text-sm font-medium">Country</Label>
                 <Select value={country} onValueChange={setCountry} required>
-                  <SelectTrigger id="auth-country">
+                  <SelectTrigger id="auth-country" className="h-10 sm:h-11 text-base">
                     <SelectValue placeholder="Select your country" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-48 sm:max-h-60">
                     {countries.map((c) => (
-                      <SelectItem key={c.code} value={c.code}>
+                      <SelectItem key={c.code} value={c.code} className="text-sm sm:text-base">
                         {c.name} - {c.currency}
                       </SelectItem>
                     ))}
@@ -174,7 +177,7 @@ const Auth = () => {
 
             <Button
               type="submit"
-              className="w-full bg-emerald-600 hover:bg-emerald-700"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 h-10 sm:h-11 text-base font-medium mt-6"
               disabled={loading}
             >
               {loading ? (
@@ -188,11 +191,11 @@ const Auth = () => {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-4 sm:mt-6 text-center">
             <Button
               variant="ghost"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-emerald-600 hover:text-emerald-700"
+              className="text-emerald-600 hover:text-emerald-700 text-sm sm:text-base p-2"
             >
               {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
             </Button>
