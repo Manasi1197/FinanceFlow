@@ -80,8 +80,8 @@ export const SpendingGoalProvider = ({ children }: SpendingGoalProviderProps) =>
         .from('spending_goals')
         .upsert({
           user_id: user.id,
-          monthly_goal: newGoals.monthly || null,
-          yearly_goal: newGoals.yearly || null
+          monthly_goal: newGoals.monthly > 0 ? newGoals.monthly.toString() : null,
+          yearly_goal: newGoals.yearly > 0 ? newGoals.yearly.toString() : null
         });
 
       if (error) {

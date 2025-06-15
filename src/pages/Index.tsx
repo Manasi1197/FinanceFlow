@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import Header from '../components/Header';
@@ -86,7 +85,7 @@ const Index = () => {
         .from('expenses')
         .insert({
           user_id: user.id,
-          amount: expense.amount,
+          amount: expense.amount.toString(),
           description: expense.description,
           category: expense.category,
           date: expense.date
