@@ -40,14 +40,14 @@ const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
       .sort((a, b) => b.value - a.value);
   }, [expenses]);
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload, coordinate }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white p-3 rounded-lg shadow-xl border border-gray-200 z-50 relative">
-          <p className="font-semibold text-gray-800">{data.name}</p>
+        <div className="bg-white p-2 rounded-lg shadow-xl border border-gray-200 text-sm max-w-48">
+          <p className="font-semibold text-gray-800 truncate">{data.name}</p>
           <p className="text-emerald-600 font-medium">{currencySymbol}{data.value.toFixed(2)}</p>
-          <p className="text-gray-600 text-sm">{data.percentage}% of total</p>
+          <p className="text-gray-600 text-xs">{data.percentage}% of total</p>
         </div>
       );
     }
@@ -71,7 +71,7 @@ const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
   return (
     <div className="space-y-6">
       {/* Chart Section */}
-      <div className="h-72 relative">
+      <div className="h-72 relative overflow-hidden">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -93,17 +93,20 @@ const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
               ))}
             </Pie>
             <Tooltip 
-              content={<CustomTooltip />} 
-              wrapperStyle={{ zIndex: 1000 }}
-              offset={20}
-              allowEscapeViewBox={{ x: true, y: true }}
+              content={<CustomTooltip />}
+              position={{ x: undefined, y: undefined }}
+              allowEscapeViewBox={{ x: false, y: false }}
+              wrapperStyle={{ 
+                zIndex: 1000,
+                pointerEvents: 'none'
+              }}
             />
           </PieChart>
         </ResponsiveContainer>
         
         {/* Center text with total */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-          <div className="text-center bg-white/80 backdrop-blur-sm rounded-full px-4 py-2">
+          <div className="text-center bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm">
             <p className="text-2xl font-bold text-gray-800">
               {currencySymbol}{expenses.reduce((sum, e) => sum + e.amount, 0).toFixed(0)}
             </p>
