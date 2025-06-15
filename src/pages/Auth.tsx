@@ -118,9 +118,9 @@ const Auth = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {isSignUp && (
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
+                <Label htmlFor="auth-fullName">Full Name</Label>
                 <Input
-                  id="fullName"
+                  id="auth-fullName"
                   type="text"
                   placeholder="John Doe"
                   value={fullName}
@@ -131,9 +131,9 @@ const Auth = () => {
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="auth-email">Email</Label>
               <Input
-                id="email"
+                id="auth-email"
                 type="email"
                 placeholder="john@example.com"
                 value={email}
@@ -143,9 +143,9 @@ const Auth = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="auth-password">Password</Label>
               <Input
-                id="password"
+                id="auth-password"
                 type="password"
                 placeholder="••••••••"
                 value={password}
@@ -156,9 +156,9 @@ const Auth = () => {
 
             {isSignUp && (
               <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
+                <Label htmlFor="auth-country">Country</Label>
                 <Select value={country} onValueChange={setCountry} required>
-                  <SelectTrigger>
+                  <SelectTrigger id="auth-country">
                     <SelectValue placeholder="Select your country" />
                   </SelectTrigger>
                   <SelectContent>
