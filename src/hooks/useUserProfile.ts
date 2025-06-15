@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -22,25 +22,28 @@ export const useUserProfile = () => {
   const { user } = useAuth();
   const lastUserIdRef = useRef<string | null>(null);
 
+  // Memoize the user ID to prevent unnecessary re-renders
+  const userId = useMemo(() => user?.id || null, [user?.id]);
+
   useEffect(() => {
     console.log('👤 useUserProfile: User changed:', {
       hasUser: !!user,
-      userId: user?.id,
+      userId: userId,
       userEmail: user?.email,
       cached: !!profileCache,
-      sameUser: lastUserIdRef.current === user?.id
+      sameUser: lastUserIdRef.current === userId
     });
     
     // If it's the same user and we have cached data, don't refetch
-    if (user?.id === lastUserIdRef.current && profileCache) {
+    if (userId === lastUserIdRef.current && profileCache) {
       console.log('👤 useUserProfile: Using cached profile');
       setProfile(profileCache);
       setLoading(false);
       return;
     }
     
-    if (user) {
-      lastUserIdRef.current = user.id;
+    if (userId) {
+      lastUserIdRef.current = userId;
       fetchProfile();
     } else {
       console.log('👤 useUserProfile: No user, clearing profile');
@@ -50,10 +53,10 @@ export const useUserProfile = () => {
       setProfile(null);
       setLoading(false);
     }
-  }, [user?.id]); // Only depend on user ID, not the entire user object
+  }, [userId]); // Only depend on memoized user ID
 
   const fetchProfile = async () => {
-    if (!user?.id) {
+    if (!userId) {
       console.log('👤 fetchProfile: No user ID available');
       setLoading(false);
       return;
@@ -73,41 +76,43 @@ export const useUserProfile = () => {
     }
 
     try {
-      console.log('📥 fetchProfile: Fetching profile for user:', user.id);
+      console.log('📥 fetchProfile: Fetching profile for user:', userId);
       setLoading(true);
       
       // Create the promise and cache it to prevent duplicate requests
-      profilePromise = supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-        .then(({ data, error }) => {
-          console.log('📊 fetchProfile: Query result:', {
-            hasData: !!data,
-            error: error?.message,
-            data: data
-          });
-
-          if (error) {
-            console.error('❌ fetchProfile: Error fetching profile:', {
-              message: error.message,
-              details: error.details,
-              hint: error.hint,
-              code: error.code
+      profilePromise = Promise.resolve(
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single()
+          .then(({ data, error }) => {
+            console.log('📊 fetchProfile: Query result:', {
+              hasData: !!data,
+              error: error?.message,
+              data: data
             });
-            
-            // If no profile exists, that might be expected for new users
-            if (error.code === 'PGRST116') {
-              console.log('ℹ️ fetchProfile: No profile found (this might be expected for new users)');
+
+            if (error) {
+              console.error('❌ fetchProfile: Error fetching profile:', {
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code
+              });
+              
+              // If no profile exists, that might be expected for new users
+              if (error.code === 'PGRST116') {
+                console.log('ℹ️ fetchProfile: No profile found (this might be expected for new users)');
+              }
+              return null;
+            } else {
+              console.log('✅ fetchProfile: Profile loaded successfully:', data);
+              profileCache = data;
+              return data;
             }
-            return null;
-          } else {
-            console.log('✅ fetchProfile: Profile loaded successfully:', data);
-            profileCache = data;
-            return data;
-          }
-        });
+          })
+      );
 
       const result = await profilePromise;
       setProfile(result);
