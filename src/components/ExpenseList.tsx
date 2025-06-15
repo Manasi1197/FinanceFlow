@@ -59,15 +59,15 @@ const ExpenseList = ({ expenses, onDelete }: ExpenseListProps) => {
           style={{ animationDelay: `${index * 0.05}s` }}
         >
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-3 mb-3">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-2 mb-3">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-semibold text-gray-900 truncate">
+                    <h3 className="text-base font-semibold text-gray-900 break-words leading-tight">
                       {expense.description}
                     </h3>
                   </div>
-                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${categoryColors[expense.category] || categoryColors['Other']} flex-shrink-0`}>
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${categoryColors[expense.category] || categoryColors['Other']} self-start sm:flex-shrink-0`}>
                     <Tag className="w-3 h-3 mr-1" />
                     {expense.category}
                   </span>
@@ -78,8 +78,8 @@ const ExpenseList = ({ expenses, onDelete }: ExpenseListProps) => {
                 </div>
               </div>
               
-              <div className="flex items-center space-x-4 ml-4">
-                <div className="text-right">
+              <div className="flex items-center justify-between sm:justify-end sm:flex-col sm:items-end gap-3 sm:gap-2 sm:ml-4">
+                <div className="text-left sm:text-right">
                   <div className="text-xl font-bold text-gray-900">
                     ${expense.amount.toFixed(2)}
                   </div>
@@ -88,7 +88,7 @@ const ExpenseList = ({ expenses, onDelete }: ExpenseListProps) => {
                   variant="outline"
                   size="sm"
                   onClick={() => onDelete(expense.id)}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
