@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { AlertTriangle, CheckCircle, Target } from 'lucide-react';
 import { useSpendingGoal } from '../contexts/SpendingGoalContext';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 interface GoalStatusProps {
   monthlySpent: number;
@@ -12,6 +13,8 @@ interface GoalStatusProps {
 
 const GoalStatus = ({ monthlySpent, yearlySpent }: GoalStatusProps) => {
   const { goals } = useSpendingGoal();
+  const { profile } = useUserProfile();
+  const currencySymbol = profile?.currency_symbol || '$';
 
   const monthlyProgress = goals.monthly > 0 ? (monthlySpent / goals.monthly) * 100 : 0;
   const yearlyProgress = goals.yearly > 0 ? (yearlySpent / goals.yearly) * 100 : 0;
@@ -47,7 +50,7 @@ const GoalStatus = ({ monthlySpent, yearlySpent }: GoalStatusProps) => {
                 <span className="font-semibold text-gray-900">Monthly Goal</span>
               </div>
               <span className="text-sm text-gray-600">
-                ${monthlySpent.toFixed(0)} / ${goals.monthly.toFixed(0)}
+                {currencySymbol}{monthlySpent.toFixed(0)} / {currencySymbol}{goals.monthly.toFixed(0)}
               </span>
             </div>
             <Progress 
@@ -70,7 +73,7 @@ const GoalStatus = ({ monthlySpent, yearlySpent }: GoalStatusProps) => {
                 <span className="font-semibold text-gray-900">Yearly Goal</span>
               </div>
               <span className="text-sm text-gray-600">
-                ${yearlySpent.toFixed(0)} / ${goals.yearly.toFixed(0)}
+                {currencySymbol}{yearlySpent.toFixed(0)} / {currencySymbol}{goals.yearly.toFixed(0)}
               </span>
             </div>
             <Progress 

@@ -4,6 +4,7 @@ import { Trash2, Calendar, Tag } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Expense } from '../pages/Index';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -23,6 +24,9 @@ const categoryColors: { [key: string]: string } = {
 };
 
 const ExpenseList = ({ expenses, onDelete }: ExpenseListProps) => {
+  const { profile } = useUserProfile();
+  const currencySymbol = profile?.currency_symbol || '$';
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
@@ -81,7 +85,7 @@ const ExpenseList = ({ expenses, onDelete }: ExpenseListProps) => {
               <div className="flex items-center justify-between sm:justify-end sm:flex-col sm:items-end gap-3 sm:gap-2 sm:ml-4">
                 <div className="text-left sm:text-right">
                   <div className="text-xl font-bold text-gray-900">
-                    ${expense.amount.toFixed(2)}
+                    {currencySymbol}{expense.amount.toFixed(2)}
                   </div>
                 </div>
                 <Button

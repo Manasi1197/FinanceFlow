@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Expense } from '../pages/Index';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 interface SpendingChartProps {
   expenses: Expense[];
@@ -12,6 +13,8 @@ type TimeFilter = 'daily' | 'weekly' | 'monthly';
 
 const SpendingChart = ({ expenses }: SpendingChartProps) => {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('daily');
+  const { profile } = useUserProfile();
+  const currencySymbol = profile?.currency_symbol || '$';
 
   // Filter expenses to current year only
   const currentYearExpenses = useMemo(() => {
@@ -114,7 +117,7 @@ const SpendingChart = ({ expenses }: SpendingChartProps) => {
       return (
         <div className="bg-white p-3 rounded-lg shadow-lg border">
           <p className="font-medium">{label}</p>
-          <p className="text-emerald-600">${payload[0].value.toFixed(2)}</p>
+          <p className="text-emerald-600">{currencySymbol}{payload[0].value.toFixed(2)}</p>
         </div>
       );
     }
@@ -172,7 +175,7 @@ const SpendingChart = ({ expenses }: SpendingChartProps) => {
             <YAxis 
               stroke="#64748b"
               fontSize={12}
-              tickFormatter={(value) => `$${value}`}
+              tickFormatter={(value) => `${currencySymbol}${value}`}
             />
             <Tooltip content={<CustomTooltip />} />
             <Line 

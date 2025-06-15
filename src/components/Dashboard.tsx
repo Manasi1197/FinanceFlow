@@ -8,6 +8,7 @@ import CategoryBreakdown from './CategoryBreakdown';
 import GoalStatus from './GoalStatus';
 import { Expense } from '../pages/Index';
 import { useSpendingGoal } from '../contexts/SpendingGoalContext';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 interface DashboardProps {
   expenses: Expense[];
@@ -17,6 +18,7 @@ interface DashboardProps {
 
 const Dashboard = ({ expenses, totalSpent, onSetupGoals }: DashboardProps) => {
   const { hasGoals } = useSpendingGoal();
+  const { profile } = useUserProfile();
 
   // Filter expenses to current year only
   const currentYearExpenses = useMemo(() => {
@@ -50,6 +52,7 @@ const Dashboard = ({ expenses, totalSpent, onSetupGoals }: DashboardProps) => {
   }, [monthlySpent]);
 
   const currentYear = new Date().getFullYear();
+  const currencySymbol = profile?.currency_symbol || '$';
 
   return (
     <div className="space-y-8">
@@ -89,7 +92,7 @@ const Dashboard = ({ expenses, totalSpent, onSetupGoals }: DashboardProps) => {
             <Calendar className="h-4 w-4 text-emerald-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">${yearlySpent.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-gray-900">{currencySymbol}{yearlySpent.toFixed(2)}</div>
             <p className="text-xs text-gray-500 mt-1">{currentYearExpenses.length} transactions</p>
           </CardContent>
         </Card>
@@ -100,7 +103,7 @@ const Dashboard = ({ expenses, totalSpent, onSetupGoals }: DashboardProps) => {
             <DollarSign className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">${totalSpent.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-gray-900">{currencySymbol}{totalSpent.toFixed(2)}</div>
             <p className="text-xs text-gray-500 mt-1">All time expenses</p>
           </CardContent>
         </Card>
@@ -111,7 +114,7 @@ const Dashboard = ({ expenses, totalSpent, onSetupGoals }: DashboardProps) => {
             <Calendar className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">${monthlySpent.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-gray-900">{currencySymbol}{monthlySpent.toFixed(2)}</div>
             <p className="text-xs text-gray-500 mt-1">{thisMonth.length} transactions</p>
           </CardContent>
         </Card>
@@ -122,7 +125,7 @@ const Dashboard = ({ expenses, totalSpent, onSetupGoals }: DashboardProps) => {
             <TrendingDown className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">${averageDaily.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-gray-900">{currencySymbol}{averageDaily.toFixed(2)}</div>
             <p className="text-xs text-gray-500 mt-1">Per day this month</p>
           </CardContent>
         </Card>

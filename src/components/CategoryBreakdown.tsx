@@ -2,6 +2,7 @@
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Expense } from '../pages/Index';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 interface CategoryBreakdownProps {
   expenses: Expense[];
@@ -20,6 +21,9 @@ const COLORS = [
 ];
 
 const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
+  const { profile } = useUserProfile();
+  const currencySymbol = profile?.currency_symbol || '$';
+
   const data = useMemo(() => {
     const categoryTotals: { [key: string]: number } = {};
     
@@ -42,7 +46,7 @@ const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
       return (
         <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
           <p className="font-semibold text-gray-800">{data.name}</p>
-          <p className="text-emerald-600 font-medium">${data.value.toFixed(2)}</p>
+          <p className="text-emerald-600 font-medium">{currencySymbol}{data.value.toFixed(2)}</p>
           <p className="text-gray-600 text-sm">{data.percentage}% of total</p>
         </div>
       );
@@ -96,7 +100,7 @@ const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
             <p className="text-2xl font-bold text-gray-800">
-              ${expenses.reduce((sum, e) => sum + e.amount, 0).toFixed(0)}
+              {currencySymbol}{expenses.reduce((sum, e) => sum + e.amount, 0).toFixed(0)}
             </p>
             <p className="text-sm text-gray-600">Total Spent</p>
           </div>
@@ -117,7 +121,7 @@ const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
                 <span className="text-sm font-medium text-gray-800 truncate">{item.name}</span>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="text-sm font-semibold text-gray-800">${item.value.toFixed(2)}</p>
+                <p className="text-sm font-semibold text-gray-800">{currencySymbol}{item.value.toFixed(2)}</p>
                 <p className="text-xs text-gray-600">{item.percentage}%</p>
               </div>
             </div>
