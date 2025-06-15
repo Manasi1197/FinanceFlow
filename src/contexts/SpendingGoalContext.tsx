@@ -57,8 +57,8 @@ export const SpendingGoalProvider = ({ children }: SpendingGoalProviderProps) =>
 
       if (data) {
         setGoalsState({
-          monthly: parseFloat(data.monthly_goal || '0'),
-          yearly: parseFloat(data.yearly_goal || '0')
+          monthly: data.monthly_goal || 0,
+          yearly: data.yearly_goal || 0
         });
       }
     } catch (error) {
@@ -80,8 +80,8 @@ export const SpendingGoalProvider = ({ children }: SpendingGoalProviderProps) =>
         .from('spending_goals')
         .upsert({
           user_id: user.id,
-          monthly_goal: newGoals.monthly > 0 ? newGoals.monthly.toString() : null,
-          yearly_goal: newGoals.yearly > 0 ? newGoals.yearly.toString() : null
+          monthly_goal: newGoals.monthly > 0 ? newGoals.monthly : null,
+          yearly_goal: newGoals.yearly > 0 ? newGoals.yearly : null
         });
 
       if (error) {

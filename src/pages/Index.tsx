@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import Header from '../components/Header';
@@ -57,7 +58,7 @@ const Index = () => {
       // Transform database format to component format
       const transformedExpenses = data.map(expense => ({
         id: expense.id,
-        amount: parseFloat(expense.amount),
+        amount: expense.amount,
         description: expense.description,
         category: expense.category,
         date: expense.date
@@ -85,7 +86,7 @@ const Index = () => {
         .from('expenses')
         .insert({
           user_id: user.id,
-          amount: expense.amount.toString(),
+          amount: expense.amount,
           description: expense.description,
           category: expense.category,
           date: expense.date
@@ -106,7 +107,7 @@ const Index = () => {
       // Transform and add to local state
       const newExpense: Expense = {
         id: data.id,
-        amount: parseFloat(data.amount),
+        amount: data.amount,
         description: data.description,
         category: data.category,
         date: data.date
