@@ -93,29 +93,30 @@ export const useUserProfile = () => {
       lastCachedUserId = userId;
       
       // Create the promise and cache it to prevent duplicate requests
-      profilePromise = supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
-        .then(({ data, error }) => {
-          if (error) {
-            console.error('❌ fetchProfile: Error fetching profile:', {
-              message: error.message,
-              code: error.code
-            });
-            
-            // If no profile exists, that might be expected for new users
-            if (error.code === 'PGRST116') {
-              console.log('ℹ️ fetchProfile: No profile found (this might be expected for new users)');
-            }
-            return null;
-          } else {
-            console.log('✅ fetchProfile: Profile loaded successfully');
-            profileCache = data;
-            return data;
+      profilePromise = (async (): Promise<UserProfile | null> => {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+
+        if (error) {
+          console.error('❌ fetchProfile: Error fetching profile:', {
+            message: error.message,
+            code: error.code
+          });
+          
+          // If no profile exists, that might be expected for new users
+          if (error.code === 'PGRST116') {
+            console.log('ℹ️ fetchProfile: No profile found (this might be expected for new users)');
           }
-        });
+          return null;
+        } else {
+          console.log('✅ fetchProfile: Profile loaded successfully');
+          profileCache = data;
+          return data;
+        }
+      })();
 
       const result = await profilePromise;
       setProfile(result);
